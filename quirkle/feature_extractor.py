@@ -26,13 +26,19 @@ color_dict_HSV = {'black': [[180, 255, 60], [0, 0, 0]],
               'gray': [[180, 21, 250], [0, 0, 70]]}
 
 NUM_CELLS = 8
-GREEn_LINE_THICKNESS = 4
+# mode = 'train'
+mode = 'fake_test'
 IMG_NAME = '1_07.jpg'
 #'red2': [[10, 255, 255], [0, 50, 65]],
 
 def read_image(img_name: str) -> np.ndarray:
     cur_dir = os.getcwd()
-    image_path = os.path.join(cur_dir, 'antrenare', img_name)
+    if mode == 'fake_test':
+        image_path = os.path.join(cur_dir, 'evaluare', 'fake_test', img_name)
+    elif mode == 'train':
+        image_path = os.path.join(cur_dir, 'antrenare', img_name)
+    else:
+        image_path = os.path.join(cur_dir, 'evaluare', 'fake_test', img_name)
     # print(image_path)
     img = cv.imread(image_path, cv.IMREAD_COLOR)
     img = cv.resize(img, dsize=(0, 0), fx=0.2, fy=0.2, interpolation=cv.INTER_AREA)
@@ -91,6 +97,7 @@ def extract_pieces_by_black_border(img: Mat | np.ndarray) -> np.ndarray:
     kernel = np.ones((5,5), np.uint8)
     closed = cv.morphologyEx(border_mask, cv.MORPH_CLOSE, kernel, iterations=2)
     filled = cv.morphologyEx(closed, cv.MORPH_CLOSE, kernel, iterations=6)
+    #show_image(filled)
 
     contours, _ = cv.findContours(filled, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
@@ -102,7 +109,7 @@ def extract_pieces_by_black_border(img: Mat | np.ndarray) -> np.ndarray:
     for c in contours:
         cv.drawContours(mask, [c], -1, (255,), thickness=cv.FILLED)
 
-    extracted = cv.bitwise_and(img, img, mask=mask)
+    extracted = cv.bitwise_and(img, img, mask=filled)
     cv.imwrite('visuals/PiecesOnly.jpg', extracted)
     return extracted
 
@@ -187,7 +194,12 @@ def encode_game(cur_img_name: str, start_img_name: str) -> tuple[QwirkleGame, np
     return game, encoded_config
 
 def write_config(decoded_conf: list[list[str]], test_set_num:int, test_num:int) -> None:
-    file = open(f'train_output/{test_set_num}_{test_num:02d}.txt', 'w+')
+    if mode == 'train':
+        file = open(f'train_output/{test_set_num}_{test_num:02d}.txt', 'w+')
+    elif mode == 'fake_test':
+        file = open(f'fake_test_output/{test_set_num}_{test_num:02d}.txt', 'w+')
+    else:
+        file = open(f'fake_test_output/{test_set_num}_{test_num:02d}.txt', 'w+')
     for i in range(len(decoded_conf)):
         for j in range(len(decoded_conf[i])):
             if decoded_conf[i][j] != '':
@@ -197,7 +209,12 @@ def write_config(decoded_conf: list[list[str]], test_set_num:int, test_num:int) 
     file.close()
 
 def write_score(score:int, test_set_num:int, test_num:int) -> None:
-    file = open(f'train_output/{test_set_num}_{test_num:02d}.txt', 'a')
+    if mode == 'train':
+        file = open(f'train_output/{test_set_num}_{test_num:02d}.txt', 'a')
+    elif mode == 'fake_test':
+        file = open(f'fake_test_output/{test_set_num}_{test_num:02d}.txt', 'a')
+    else:
+        file = open(f'fake_test_output/{test_set_num}_{test_num:02d}.txt', 'a')
     file.write(str(score))
     file.close()
 
@@ -279,14 +296,16 @@ def classify_numbers(contours: list[np.ndarray]) -> list[int]:
 
 
 if __name__ == '__main__':
-    test_set_num = 4
-    test_num = 1
+    test_set_num = 1
+    test_num = 16
     start_img_name = f'{test_set_num}_{test_num - 1:02d}.jpg'
-    cur_img_name = f'{test_set_num}_{test_num-1:02d}.jpg'
+    cur_img_name = f'{test_set_num}_{test_num:02d}.jpg'
     table_image = get_table_image(cur_img_name)
     pieces_image = extract_pieces_by_black_border(table_image)
-    game = start_game(pieces_image)
-    game = add_bonus_cells(game, table_image)
+    show_image(table_image)
+    show_image(pieces_image)
+    #game = start_game(pieces_image)
+    #game = add_bonus_cells(game, table_image)
         # pieces_image = extract_pieces_by_black_border(table_image)
     # color = 'red1'
     # result_image = extract_pieces_by_color(pieces_image, color)
