@@ -177,21 +177,6 @@ def classify_hierarchical(contour: np.ndarray) -> str:
 
 def classify_contours(contours: list[np.ndarray], centroids: list) -> list[str]:
     forms = []
-    # references = get_reference_contours()
-    # normalized_references = {
-    #     name: normalize(ref_contour)
-    #     for name, ref_contour in references.items()
-    # }
-
-    # normalized_references = {}
-    # for name, ref_contour in references.items():
-    #     norm_ref = ref_contour
-    #     #norm_ref = normalize(ref_contour)
-    #     approx_ref = cv.approxPolyDP(norm_ref, 0.02 * cv.arcLength(norm_ref, True), True)
-    #     normalized_references[name] = approx_ref
-    # visualize_reference_contours(normalized_references)
-    #print(f"{'ID':<5} {'Solidity':<10} {'Vertices':<10} {'Class':<10}")
-    #print("-" * 40)
     for i, contour in enumerate(contours):
         if cv.contourArea(contour) < 50:
             forms.append("noise")
